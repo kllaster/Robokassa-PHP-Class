@@ -39,7 +39,7 @@ $RK_test = [
 
 $Robokassa = new Robokassa($RK);
 
-// $price       - Сумаа заказа
+// $price       - Сумма заказа
 // $invid       - Номер чека
 // $pay_metod   - Способ оплаты
 // $info_desk   - Описание заказа
