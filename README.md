@@ -1,17 +1,19 @@
 # Robokassa_PHP_Class
 
-1. Подключаем класс
+Простой класс для работы с API Robokassa (https://robokassa.com).
 
-```
+## Как использовать
+### 1. Подключаем класс
+
+```php
 <?php
 
-require_once 'Robokassa.class.php';
-
+require_once 'Robokassa.php';
 ```
 
-2. Создать массивы с данными магазина
+### 2. Создаем массив с данными магазина
 
-```
+```php
 <?php
 
 $RK = [
@@ -19,103 +21,98 @@ $RK = [
     'pass1' => '********************',      // Пароль 1
     'pass2' => '********************',      // Пароль 2
     'test' => false,                        // Тестовые данные или нет (true / false)
-    'logs' => true                          // Вести лог действий или нет (true / false)
 ];
-
-$RK_test = [
-    'name' => 'Name_Shop',                  
-    'pass1' => '********************',      
-    'pass2' => '********************',      
-    'test' => true,                         
-    'logs' => true                          
-];
-
 ```
 
-3. Редирект на страницу оплаты
+### 3. Перенаправление пользователя на страницу оплаты
 
-```
+```php
 <?php
 
 $Robokassa = new Robokassa($RK);
 
-// $price       - Сумма заказа
-// $invid       - Номер чека
-// $pay_metod   - Способ оплаты
-// $info_desk   - Описание заказа
-// $params      - Пользовательсякие параметры
-// $lang        - Язык
-
-$Robokassa->Redirect($price, $invid, $pay_metod, $info_desk, $params, $lang);
-
+/**
+ * Переадресация на страницу оплаты.
+ * @param int $order_id - ID заказа (InvId)
+ * @param float $sum - Сумаа заказа (OutSum)
+ * @param string $desc - Описание заказа (InvDesc)
+ * @param array|null $params - Кастомные параметры
+ * @param string|null $pay_method - Способ оплаты (IncCurrLabel)
+ * @param string|null $lang - Язык (Culture)
+ */
+$Robokassa->redirect($order_id, $sum, $desc, $params, $pay_method, $lang);
 ```
 
-4. Проверка параметров после нажатия на кнопку "Вернуться в магазин" (URL Success в настройках магазина RK)
+### 4. Проверка параметров после нажатия на кнопку "Вернуться в магазин" (URL Success в настройках магазина Robokassa)
 
-```
+```php
 <?php
 
-if(!empty($_REQUEST["OutSum"]) && !empty($_REQUEST["InvId"]) && !empty($_REQUEST["SignatureValue"])){
-
-    $params = array();
-    if (!empty($_REQUEST)) {
-        foreach ($_REQUEST as $key => $value) {
-            if (strpos($key, 'shp_') !== false) {
-                $x          = str_replace('shp_', '', $key);
-                $params[$x] = $value;
-                $log_params .= $x . ' - ' . $value . ' ; ';
-            }
+$params = array();
+if (!empty($_REQUEST))
+{
+    foreach ($_REQUEST as $key => $value)
+    {
+        if (strpos($key, 'shp_') !== false)
+        {
+            $x          = str_replace('shp_', '', $key);
+            $params[$x] = $value;
         }
-    }
-
-    $Robokassa = new Robokassa($RK);
-
-    $check = $Robokassa->Success($_REQUEST["OutSum"] . 0000, $_REQUEST["InvId"], $params, $_REQUEST["SignatureValue"]);
-
-    if($check == true){
-
-        //Success code
-
-    }else{
-
-        //Failure code
-
     }
 }
 
+$Robokassa = new Robokassa($RK);
+
+/**
+ * Проверка ответа от Robokassa.
+ * @param string $request - Какой ответ проверяем (result, success)
+ * @param array $params - Кастомные параметры
+ * @return bool
+ */
+$check = $Robokassa->check_response('success', $params);
+if ($check == true)
+{
+    // Success code
+}
+else
+{
+    // Failure code
+}
 ```
 
-5. Проверка параметров результата (URL Result в настройках магазина RK). Запрос отправляет сама Robokassa
+### 5. Проверка параметров результата (URL Result в настройках магазина Robokassa). Запрос отправляет сама Robokassa.
 
-```
+```php
 <?php
 
-if (!empty($_REQUEST["OutSum"]) && !empty($_REQUEST["InvId"]) && !empty($_REQUEST["SignatureValue"])) {
-
-    $params = array();
-    if (!empty($_REQUEST)) {
-        foreach ($_REQUEST as $key => $value) {
-            if (strpos($key, 'shp_') !== false) {
-                $x          = str_replace('shp_', '', $key);
-                $params[$x] = $value;
-                $log_params .= $x . ' - ' . $value . ' ; ';
-            }
+$params = array();
+if (!empty($_REQUEST))
+{
+    foreach ($_REQUEST as $key => $value)
+    {
+        if (strpos($key, 'shp_') !== false)
+        {
+            $x          = str_replace('shp_', '', $key);
+            $params[$x] = $value;
         }
-    }
-
-    $Robokassa = new Robokassa($RK);
-
-    $check = $Robokassa->Result($_REQUEST["OutSum"], $_REQUEST["InvId"], $params, $_REQUEST["SignatureValue"]);
-
-    if($check == true){
-
-        //Success code
-
-    }else{
-
-        //Failure code
-
     }
 }
 
+$Robokassa = new Robokassa($RK);
+
+/**
+ * Проверка ответа от Robokassa.
+ * @param string $request - Какой ответ проверяем (result, success)
+ * @param array $params - Кастомные параметры
+ * @return bool
+ */
+$check = $Robokassa->check_response('result', $params);
+if ($check == true)
+{
+    // Success code
+}
+else
+{
+    // Failure code
+}
 ```
